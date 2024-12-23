@@ -1,7 +1,5 @@
 ﻿  Source.c
-C:\Users\Administrator\Desktop\CodingGame\Project1\Source.c(6,7): error C2061: 구문 오류: 식별자 'Character'
-C:\Users\Administrator\Desktop\CodingGame\Project1\Source.c(6,7): error C2059: 구문 오류: ';'
-C:\Users\Administrator\Desktop\CodingGame\Project1\Source.c(7,1): error C2449: 파일 범위에 '{'가 있습니다. 함수 헤더가 없는 것 같습니다.
-C:\Users\Administrator\Desktop\CodingGame\Project1\Source.c(14,1): error C2059: 구문 오류: '}'
-C:\Users\Administrator\Desktop\CodingGame\Project1\Source.c(20,10): error C2143: 구문 오류: '{'이(가) ':' 앞에 없습니다.
-C:\Users\Administrator\Desktop\CodingGame\Project1\Source.c(20,10): error C2059: 구문 오류: ':'
+  C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\yvals_core.h(27): STL1003: Unexpected compiler, expected C++ compiler.
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.38.33130\include\yvals_core.h(28,1): error C1189: #error:  Error in C++ Standard Library usage
+  (소스 파일 'Source.c'을(를) 컴파일하는 중)
+  
