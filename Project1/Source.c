@@ -22,113 +22,47 @@ struct Monster
 	int MonsterAP;
 	int MonsterDP;
 };
+void Savefile(char * filename, int value)
+{
+	FILE* file = fopen(filename, "w");
+	fprintf(file, "%d\n", value);
+	fclose(file);
+}
 void Save(int php,int pap, int pdp, int mhp, int map, int mdp, int stage)
 {
-	FILE* file;
-	file = fopen("php.txt", "w");
-	fprintf(file,"%d",php);
-	fclose(file);
-	file = fopen("pap.txt", "w");
-	fprintf(file, "%d", pap);
-	fclose(file);
-	file = fopen("pdp.txt", "w");
-	fprintf(file, "%d", pdp);
-	fclose(file);
-	file = fopen("mhp.txt", "w");
-	fprintf(file, "%d", mhp);
-	fclose(file);
-	file = fopen("map.txt", "w");
-	fprintf(file, "%d", map);
-	fclose(file);
-	file = fopen("mdp.txt", "w");
-	fprintf(file, "%d", mdp);
-	fclose(file);
-	file = fopen("stage.txt", "w");
-	fprintf(file, "%d", stage);
-	fclose(file);
+	Savefile("php.txt", php);
+	Savefile("pap.txt", pap);
+	Savefile("pdp.txt", pdp);
+	Savefile("mhp.txt", mhp);
+	Savefile("map.txt", map);
+	Savefile("mdp.txt", mdp);
+	Savefile("stage.txt", stage);
+}
+void Read(char* filename, int* value, int defaultvalue)
+{
+	int number = 0;
+	FILE* file = fopen(filename, "r");
+	if (file != NULL)
+	{
+		fscanf_s(file, "%d", &number);
+		*value = number;
+		fclose(file);
+	}
+	else
+	{
+		printf("파일을 찾을 수 없어 새로 시작합니다.\n");
+		*value = defaultvalue;
+	}
 }
 void Road(int* php, int* pap, int* pdp, int* mhp, int* map, int* mdp, int* stage)
 {
-	FILE* file;
-	file = fopen("php.txt", "r");
-	if (file != NULL)
-	{
-		fscanf(file, "%d", php);
-		fclose(file);
-	}
-	else
-	{
-		printf("Save ");
-		*php = PHP;
-	}
-	file = fopen("pap.txt", "r");
-	if (file != NULL)
-	{
-		fscanf(file, "%d", pap);
-		fclose(file);
-	}
-	else
-	{
-		printf("file ");
-		*pap = PAP;
-	}
-	file = fopen("pdp.txt", "r");
-	if (file != NULL)
-	{
-		fscanf(file, "%d", pdp);
-		fclose(file);
-	}
-	else
-	{
-		printf("does ");
-		*pdp = PDP;
-
-	}
-	file = fopen("mhp.txt", "r");
-	if (file != NULL)
-	{
-		fscanf(file, "%d", mhp);
-		fclose(file);
-	}
-	else
-	{
-		printf("not \n");
-		*mhp = MHP;
-	}
-	file = fopen("map.txt", "r");
-	if (file != NULL)
-	{
-		fscanf(file, "%d", map);
-		fclose(file);
-	}
-	else
-	{
-		printf("exist. ");
-		*map = MAP;
-	}
-	file = fopen("mdp.txt", "r");
-	if (file != NULL)
-	{
-		fscanf(file, "%d", mdp);
-		fclose(file);
-	}
-	else
-	{
-		printf("Start ");
-		*mdp = MDP;
-	}
-	file = fopen("stage.txt", "r");
-	if (file != NULL)
-	{
-		fscanf(file, "%d", stage);
-		fclose(file);
-	}
-	else
-	{
-		printf("new game.");
-		*stage = 0;
-	}
-	Sleep(2000);
+	Read("php.txt", php, PHP);
+	Read("pap.txt", pap, PAP);
+	Read("pdp.txt", pdp, PDP);
+	Read("mhp.txt", mhp, MHP);
+	Read("map.txt", map, MAP);
+	Read("mdp.txt", mdp, MDP);
+	Read("stage.txt", stage, 0);
 }
 void Battle(int * php, int * pap, int * pdp, int * mhp, int * map, int * mdp, int x)
 {
@@ -182,11 +116,12 @@ void Battle(int * php, int * pap, int * pdp, int * mhp, int * map, int * mdp, in
 }
 int main()
 {
-	printf("N : New Game\nR : Road Game\nL : Leave");
+	printf("N : New Game\nR : Road Game\nL : Leave\n");
 	int stage = 0;
 	int choice = -1;
 	int bonus = -1;
 	int save = -1;
+	int savefile = -1;
 	struct Character character;
 	character.PlayerHP = PHP;
 	character.PlayerAP = PAP;
@@ -226,9 +161,9 @@ int main()
 		}
 		else
 		{
-		mhp += (stage * 10);
-		map += (stage * 1);
-		mdp += (stage * 1);
+		mhp = MHP + (stage * 10);
+		map = MAP + (stage * 1);
+		mdp = MDP + (stage * 1);
 		}
 		while (php > 0 && mhp > 0)
 		{
@@ -246,14 +181,21 @@ int main()
 				}
 				else if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
 				{
-					printf("S : save\nE : Exit");
-					if (GetAsyncKeyState('S') & 0x0001)
+					printf("S : Save\nE : Exit");
+					while (savefile == -1)
 					{
-					Save(php, pap, pdp, mhp, map, mdp, stage);
-					}
-					else if (GetAsyncKeyState('E') & 0x0001)
-					{
-						exit(0);
+						if (GetAsyncKeyState('S') & 0x0001)
+						{
+							Save(php, pap, pdp, mhp, map, mdp, stage);
+							savefile = 0;
+							exit(0);
+						}
+						else if (GetAsyncKeyState('E') & 0x0001)
+						{
+							exit(0);
+							savefile = 1;
+						}
+						savefile = -1;
 					}
 				}
 			}
@@ -261,9 +203,9 @@ int main()
 			printf("전투 결과 : 플레이어 체력: %d, 몬스터 체력: %d\n", php, mhp);
 			choice = -1;
 		}
-		if (php > 0 && stage < STAGE)
+		if (php > 0 && stage < STAGE - 1)
 		{
-			printf("1%d Stage Clear\n", stage);
+			printf("%d Stage Clear\n", stage + 1);
 			printf("보상을 선택하세요.\n1 : 체력 회복(50)\n2 : 공격력 증가(5)\n3 : 방어력 증가(5)\n");
 			while (bonus == -1)
 			{
@@ -284,7 +226,7 @@ int main()
 				}
 			}
 			bonus = -1;
-			stage++;
+			stage += 1;
 		}
 		else if(mhp > 0)
 		{
@@ -293,9 +235,10 @@ int main()
 			pdp = PDP;
 			stage = 0;
 		}
-	}
-	if (stage == STAGE)
-	{
-		printf("Victory");
+		else if (stage == STAGE - 1)
+		{
+			printf("Victory\n");
+			exit(0);
+		}
 	}
 }
