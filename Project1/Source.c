@@ -9,10 +9,10 @@
 #define MAP 9
 #define MDP 4
 #define STAGE 5
+#define SIZE 10000
 
 int screenIndex;
 HANDLE screen[2];
-
 void Initialize()
 {
 	CONSOLE_CURSOR_INFO cursor;
@@ -39,13 +39,11 @@ void Initialize()
 	SetConsoleCursorInfo(screen[0], &cursor);
 	SetConsoleCursorInfo(screen[1], &cursor);
 }
-
 void Flip()
 {
 	SetConsoleActiveScreenBuffer(screen[screenIndex]);
 	screenIndex = !screenIndex;
 }
-
 void Clear()
 {
 	COORD position = { 0,0 };
@@ -57,20 +55,64 @@ void Clear()
 	int height = consoleInfo.srWindow.Bottom - consoleInfo.srWindow.Top + 1;
 	FillConsoleOutputCharacter(screen[screenIndex], ' ', width * height, position, &dword);
 }
-
 void Release()
 {
 	CloseHandle(screen[0]);
 	CloseHandle(screen[1]);
 }
-
 void Render(int x, int y, const char* shape)
 {
 	DWORD dword;
-	//	x축과 y축을 설정
 	COORD position = { x, y };
 	SetConsoleCursorPosition(screen[screenIndex], position);
 	WriteFile(screen[screenIndex], shape, strlen(shape), &dword, NULL);
+}
+void PlayerStatus(int x, int y, int php, int pap, int pdp)
+{
+	char buffer[50];
+	snprintf(buffer, sizeof(buffer), "Player HP: %d  AP: %d  DP: %d", php, pap, pdp);
+	Render(x, y, buffer);
+}
+void MonsterStatus(int x, int y, int mhp, int map, int mdp)
+{
+	char buffer[50];
+	snprintf(buffer, sizeof(buffer), "Monster HP: %d  AP: %d  DP: %d", mhp, map, mdp);
+	Render(x, y, buffer);
+}
+void AD(int x,int y,char* z)
+{
+	FILE* file = fopen(z, "r");
+	char buffer[SIZE] = { 0, };
+	size_t bytesRead = fread(buffer, 1, SIZE, file);
+	buffer[bytesRead] = '\0';
+	printf("%s", buffer);
+	fclose(file);
+	Render(x, y, buffer);
+}
+void Stage(int x, int y, int stage)
+{
+	char buffer[50];
+	snprintf(buffer, sizeof(buffer), "%d Stage",stage + 1);
+	Render(x, y, buffer);
+}
+void PlayerHP(int x, int y, int php)
+{
+	char buffer[50];
+	snprintf(buffer, sizeof(buffer), "%+d", php);
+	Render(x, y, buffer);
+}
+void MonsterHP(int x, int y, int mhp)
+{
+	char buffer[50];
+	snprintf(buffer, sizeof(buffer), "%+d", mhp);
+	Render(x, y, buffer);
+}
+void Write(int x, int y)
+{
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD dword;
+	COORD position = { x, y };
+	SetConsoleCursorPosition(handle, position);
 }
 void maximizeConsoleWindow() 
 {
@@ -155,7 +197,8 @@ void Battle(int * php, int * pap, int * pdp, int * mhp, int * map, int * mdp, in
 		{
 			*mhp -= (*pap - *mdp);
 		}
-		Render((consoleInfo.srWindow.Right - consoleInfo.srWindow.Left - 1) / 2, consoleInfo.srWindow.Bottom, "플레이어 공격 VS 몬스터 공격");
+		AD((consoleInfo.srWindow.Right - consoleInfo.srWindow.Left - 1) / 2, consoleInfo.srWindow.Bottom, "attack.txt");
+		
 	}
 	else if (x == 0 && random == 1)
 	{
@@ -200,6 +243,7 @@ int main()
 	int bonus = -1;
 	int save = -1;
 	int savefile = -1;
+	int result = -1;
 	struct Character character;
 	character.PlayerHP = PHP;
 	character.PlayerAP = PAP;
@@ -254,7 +298,12 @@ int main()
 		}
 		while (php > 0 && mhp > 0)
 		{
-			Render(width/2, 0, "1 : 공격 2 : 방어");
+			int currentPhp = php;
+			int currentMhp = mhp;
+			Render(width/2, 1, "1 : 공격 2 : 방어");
+			PlayerStatus(1, 1, php, pap, pdp);
+			MonsterStatus(1, 2, mhp, map, mdp);
+			Stage(width / 2, 0, stage);
 			Flip();
 			Clear();
 			while (choice == -1)
@@ -292,6 +341,14 @@ int main()
 				}
 			}
 			Battle(&php, &pap, &pdp, &mhp, &map, &mdp, choice);
+			if (php - currentPhp != 0)
+			{
+				PlayerHP(20, 20, php - currentPhp);
+			}
+			if (mhp - currentMhp != 0)
+			{
+				MonsterHP(40, 20, mhp - currentMhp);
+			}
 			choice = -1;
 		}
 		if (php > 0 && stage < STAGE - 1)
@@ -327,15 +384,40 @@ int main()
 		}
 		else if(mhp > 0)
 		{
-			php = PHP;
-			pap = PAP;
-			pdp = PDP;
-			stage = 0;
+			while (result == -1)
+			{
+				Flip();
+				Clear();
+				Render(width / 2, height / 2, "D E F E A T");
+				Render(width / 2, (height / 2)+2, "1 : Restart");
+				Render(width / 2, (height / 2) + 2, "2 : EXIT");
+				if (GetAsyncKeyState('1') & 0x0001)
+				{
+					result = 1;
+					result = -1;
+					php = PHP;
+					pap = PAP;
+					pdp = PDP;
+					stage = 0;
+				}
+				else if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
+				{
+					exit(0);
+				}
+			}
 		}
 		else if (stage == STAGE - 1)
 		{
-			Clear();
-			printf("Victory\n");
+			while (result == -1)
+			{
+				Flip();
+				Clear();
+				Render(width / 2, height / 2, "V I C T O R Y");
+				if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
+				{
+					result = 1;
+				}
+			}
 			exit(0);
 		}
 	}
