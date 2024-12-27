@@ -82,12 +82,17 @@ void MonsterStatus(int x, int y, int mhp, int map, int mdp)
 void AD(int x,int y,char* z)
 {
 	FILE* file = fopen(z, "r");
-	char buffer[SIZE] = { 0, };
-	size_t bytesRead = fread(buffer, 1, SIZE, file);
-	buffer[bytesRead] = '\0';
-	printf("%s", buffer);
+
+	char buffer[SIZE];
+	int currentY = y;
+
+	while (fgets(buffer, SIZE, file) != NULL) {
+		buffer[strcspn(buffer, "\r\n")] = '\0'; 
+		Render(x, currentY, buffer); 
+		currentY++;                          
+	}
+
 	fclose(file);
-	Render(x, y, buffer);
 }
 void Stage(int x, int y, int stage)
 {
@@ -173,7 +178,7 @@ void Road(int* php, int* pap, int* pdp, int* mhp, int* map, int* mdp, int* stage
 	Read("mdp.txt", mdp, MDP);
 	Read("stage.txt", stage, 0);
 }
-void Battle(int * php, int * pap, int * pdp, int * mhp, int * map, int * mdp, int x)
+void Battle(int * php, int * pap, int * pdp, int * mhp, int * map, int * mdp, int x,int stage,int *Pr, int* Mr,int*Pd,int*Md)
 {
 	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -197,8 +202,8 @@ void Battle(int * php, int * pap, int * pdp, int * mhp, int * map, int * mdp, in
 		{
 			*mhp -= (*pap - *mdp);
 		}
-		AD((consoleInfo.srWindow.Right - consoleInfo.srWindow.Left - 1) / 2, consoleInfo.srWindow.Bottom, "attack.txt");
-		
+		*Pr = 0;
+		*Mr = 0;
 	}
 	else if (x == 0 && random == 1)
 	{
@@ -206,12 +211,15 @@ void Battle(int * php, int * pap, int * pdp, int * mhp, int * map, int * mdp, in
 		if (r == 0)
 		{
 			*mhp += *mdp;
+			*Md = 0;
 		}
 		else
 		{
 			*mhp -= (*pap + *mdp);
+			*Md = 1;
 		}
-		Render((consoleInfo.srWindow.Right - consoleInfo.srWindow.Left - 1) / 2, consoleInfo.srWindow.Bottom, "플레이어 공격 VS 몬스터 방어");
+		*Pr = 0;
+		*Mr = 1;
 	}
 	else if (x == 1 && random == 0)
 	{
@@ -219,16 +227,22 @@ void Battle(int * php, int * pap, int * pdp, int * mhp, int * map, int * mdp, in
 		if (d == 0)
 		{
 			*php += *pdp;
+			*Pd = 0;
 		}
 		else
 		{
 			*php -= (*map + *pdp);
+			*Pd = 1;
 		}
-		Render((consoleInfo.srWindow.Right - consoleInfo.srWindow.Left - 1) / 2, consoleInfo.srWindow.Bottom, "플레이어 방어 VS 몬스터 공격");
+		*Pr = 1;
+		*Mr = 0;
 	}
 	else
 	{
-		Render((consoleInfo.srWindow.Right - consoleInfo.srWindow.Left - 1) / 2, consoleInfo.srWindow.Bottom, "플레이어 방어 VS 몬스터 방어");
+		*Pr = 1;
+		*Pd = 0;
+		*Mr = 1;
+		*Md = 0;
 	}
 }
 int main()
@@ -244,6 +258,10 @@ int main()
 	int save = -1;
 	int savefile = -1;
 	int result = -1;
+	int Pr = 0;
+	int Mr = 0;
+	int Pd = 0;
+	int Md = 0;
 	struct Character character;
 	character.PlayerHP = PHP;
 	character.PlayerAP = PAP;
@@ -301,9 +319,11 @@ int main()
 			int currentPhp = php;
 			int currentMhp = mhp;
 			Render(width/2, 1, "1 : 공격 2 : 방어");
-			PlayerStatus(1, 1, php, pap, pdp);
-			MonsterStatus(1, 2, mhp, map, mdp);
-			Stage(width / 2, 0, stage);
+			AD(5, 24, "knight.txt");
+			AD(140, 2, "slime.txt");
+			PlayerStatus(5, 22, php, pap, pdp);
+			MonsterStatus(150, 27, mhp, map, mdp);
+			Stage(width / 2 - 5, 0, stage);
 			Flip();
 			Clear();
 			while (choice == -1)
@@ -340,7 +360,11 @@ int main()
 					}
 				}
 			}
-			Battle(&php, &pap, &pdp, &mhp, &map, &mdp, choice);
+			Battle(&php, &pap, &pdp, &mhp, &map, &mdp, choice,stage,&Pr,&Mr,&Pd,&Md);
+			//	if (Pr == 0 && Mr == 0)
+			//	{
+			//		AD()
+			//	}
 			if (php - currentPhp != 0)
 			{
 				PlayerHP(20, 20, php - currentPhp);
