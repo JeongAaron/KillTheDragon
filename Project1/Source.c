@@ -10,7 +10,37 @@
 #define MDP 4
 #define STAGE 5
 #define SIZE 10000
-
+struct Character
+{
+	int PlayerHP;
+	int PlayerAP;
+	int PlayerDP;
+};
+struct Monster
+{
+	int MonsterHP;
+	int MonsterAP;
+	int MonsterDP;
+};
+enum Color
+{
+	BRACK,
+	DARKBLUE,
+	DARKGREEN,
+	DARKSKY,
+	DARKRED,
+	DARKPURPLE,
+	DARKYELLOW,
+	GRAY,
+	DARKGRAY,
+	BLUE,
+	GREEN,
+	SKY,
+	RED,
+	PURPLE,
+	YELLOW,
+	WHITE
+};
 int screenIndex;
 HANDLE screen[2];
 void Initialize()
@@ -65,7 +95,22 @@ void Render(int x, int y, const char* shape)
 	DWORD dword;
 	COORD position = { x, y };
 	SetConsoleCursorPosition(screen[screenIndex], position);
-	WriteFile(screen[screenIndex], shape, strlen(shape), &dword, NULL);
+	for (int i = 0; i < strlen(shape); i++) 
+	{
+		if (shape[i] == 'O') 
+		{
+			SetConsoleTextAttribute(screen[screenIndex], 9);
+		}
+		else if (shape[i] == 'D') 
+		{
+			SetConsoleTextAttribute(screen[screenIndex], 0);
+		}
+		else 
+		{
+			SetConsoleTextAttribute(screen[screenIndex], 15);
+		}
+		WriteFile(screen[screenIndex], &shape[i], 1, &dword, NULL);
+	}
 }
 void PlayerStatus(int x, int y, int php, int pap, int pdp)
 {
@@ -124,18 +169,6 @@ void maximizeConsoleWindow()
 	HWND hwndConsole = GetConsoleWindow();
 	ShowWindow(hwndConsole, SW_MAXIMIZE);
 }
-struct Character
-{
-	int PlayerHP;
-	int PlayerAP;
-	int PlayerDP;
-};
-struct Monster
-{
-	int MonsterHP;
-	int MonsterAP;
-	int MonsterDP;
-};
 void Savefile(char * filename, int value)
 {
 	FILE* file = fopen(filename, "w");
@@ -319,10 +352,17 @@ int main()
 			int currentPhp = php;
 			int currentMhp = mhp;
 			Render(width/2, 1, "1 : 공격 2 : 방어");
-			AD(5, 24, "knight.txt");
-			AD(140, 2, "slime.txt");
-			PlayerStatus(5, 22, php, pap, pdp);
-			MonsterStatus(150, 27, mhp, map, mdp);
+			AD(5, height/2 - 5, "knight.txt");
+			switch (stage)
+			{
+			case 0: AD(width * 2 / 3, 2, "snale.txt"); break;
+			case 1: AD(width * 2 / 3, 2, "slime.txt"); break;
+			case 2: AD(width * 2 / 3, 2, "goblin.txt"); break;
+			case 3: AD(width * 2 / 3, 2, "ogre.txt"); break;
+			case 4: AD(width * 2 / 3, 2, "dragon.txt"); break;
+			}
+			PlayerStatus(5,height/2 -7, php, pap, pdp);
+			MonsterStatus((width * 2/3) + 7,height/2 + 10, mhp, map, mdp);
 			Stage(width / 2 - 5, 0, stage);
 			Flip();
 			Clear();
@@ -359,19 +399,15 @@ int main()
 						savefile = -1;
 					}
 				}
+				Battle(&php, &pap, &pdp, &mhp, &map, &mdp, choice,stage,&Pr,&Mr,&Pd,&Md);
 			}
-			Battle(&php, &pap, &pdp, &mhp, &map, &mdp, choice,stage,&Pr,&Mr,&Pd,&Md);
-			//	if (Pr == 0 && Mr == 0)
-			//	{
-			//		AD()
-			//	}
 			if (php - currentPhp != 0)
 			{
-				PlayerHP(20, 20, php - currentPhp);
+				PlayerHP(width/4 +5, height/2, php - currentPhp);
 			}
 			if (mhp - currentMhp != 0)
 			{
-				MonsterHP(40, 20, mhp - currentMhp);
+				MonsterHP((width * 2 / 3)- 5,height/2, mhp - currentMhp);
 			}
 			choice = -1;
 		}
