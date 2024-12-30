@@ -24,7 +24,7 @@ struct Monster
 };
 enum Color
 {
-	BRACK,
+	BLACK,
 	DARKBLUE,
 	DARKGREEN,
 	DARKSKY,
@@ -99,15 +99,23 @@ void Render(int x, int y, const char* shape)
 	{
 		if (shape[i] == 'O') 
 		{
-			SetConsoleTextAttribute(screen[screenIndex], 9);
+			SetConsoleTextAttribute(screen[screenIndex], BLUE);
 		}
-		else if (shape[i] == 'D') 
+		else if (shape[i] == 'Q') 
 		{
-			SetConsoleTextAttribute(screen[screenIndex], 0);
+			SetConsoleTextAttribute(screen[screenIndex], GREEN);
+		}
+		else if (shape[i] == 'X')
+		{
+			SetConsoleTextAttribute(screen[screenIndex], RED);
+		}
+		else if (shape[i] == 'U')
+		{
+			SetConsoleTextAttribute(screen[screenIndex], DARKGREEN);
 		}
 		else 
 		{
-			SetConsoleTextAttribute(screen[screenIndex], 15);
+			SetConsoleTextAttribute(screen[screenIndex], WHITE);
 		}
 		WriteFile(screen[screenIndex], &shape[i], 1, &dword, NULL);
 	}
@@ -115,13 +123,13 @@ void Render(int x, int y, const char* shape)
 void PlayerStatus(int x, int y, int php, int pap, int pdp)
 {
 	char buffer[50];
-	snprintf(buffer, sizeof(buffer), "Player HP: %d  AP: %d  DP: %d", php, pap, pdp);
+	snprintf(buffer, sizeof(buffer), "HP: %d  AP: %d  DP: %d", php, pap, pdp);
 	Render(x, y, buffer);
 }
 void MonsterStatus(int x, int y, int mhp, int map, int mdp)
 {
 	char buffer[50];
-	snprintf(buffer, sizeof(buffer), "Monster HP: %d  AP: %d  DP: %d", mhp, map, mdp);
+	snprintf(buffer, sizeof(buffer), "HP: %d  AP: %d  DP: %d", mhp, map, mdp);
 	Render(x, y, buffer);
 }
 void AD(int x,int y,char* z)
@@ -131,7 +139,8 @@ void AD(int x,int y,char* z)
 	char buffer[SIZE];
 	int currentY = y;
 
-	while (fgets(buffer, SIZE, file) != NULL) {
+	while (fgets(buffer, SIZE, file) != NULL) 
+	{
 		buffer[strcspn(buffer, "\r\n")] = '\0'; 
 		Render(x, currentY, buffer); 
 		currentY++;                          
@@ -329,9 +338,10 @@ int main()
 		{
 			exit(0);
 		}
-		Render(width/2, 10, "N : New Game");
-		Render(width/2, 20, "R : Road Game");
-		Render(width/2, 30,"L : Leave");
+		AD(20, 2, "title.txt");
+		Render(width * 1/3, consoleInfo.srWindow.Bottom-4, "N : New Game");
+		Render(width/2, consoleInfo.srWindow.Bottom - 4, "R : Road Game");
+		Render(width * 2/3, consoleInfo.srWindow.Bottom - 4,"L : Leave");
 	}
 	Clear();
 	while (stage < STAGE)
@@ -351,19 +361,19 @@ int main()
 		{
 			int currentPhp = php;
 			int currentMhp = mhp;
-			Render(width/2, 1, "1 : 공격 2 : 방어");
+			Render(width/2 - 10, height/2, "1 : 공격   2 : 방어");
 			AD(5, height/2 - 5, "knight.txt");
 			switch (stage)
 			{
-			case 0: AD(width * 2 / 3, 2, "snale.txt"); break;
-			case 1: AD(width * 2 / 3, 2, "slime.txt"); break;
-			case 2: AD(width * 2 / 3, 2, "goblin.txt"); break;
-			case 3: AD(width * 2 / 3, 2, "ogre.txt"); break;
-			case 4: AD(width * 2 / 3, 2, "dragon.txt"); break;
+			case 0: AD(width * 4 / 5, 2, "snale.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "달팽이"); break;
+			case 1: AD(width * 4 / 5, 2, "slime.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "슬라임"); break;
+			case 2: AD(width * 4 / 5, 2, "goblin.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "고블린"); break;
+			case 3: AD(width * 4 / 5, 2, "ogre.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "오우거"); break;
+			case 4: AD(width * 4 / 5, 2, "dragon.txt"); Render((width * 4/5) + 7,(height/2) - 2, "드래곤"); break;
 			}
 			PlayerStatus(5,height/2 -7, php, pap, pdp);
-			MonsterStatus((width * 2/3) + 7,height/2 + 10, mhp, map, mdp);
-			Stage(width / 2 - 5, 0, stage);
+			MonsterStatus((width * 4/5) + 7,height/2, mhp, map, mdp);
+			Stage(width / 2 - 5, 2, stage);
 			Flip();
 			Clear();
 			while (choice == -1)
@@ -448,9 +458,9 @@ int main()
 			{
 				Flip();
 				Clear();
-				Render(width / 2, height / 2, "D E F E A T");
-				Render(width / 2, (height / 2)+2, "1 : Restart");
-				Render(width / 2, (height / 2) + 2, "2 : EXIT");
+				AD(20, 2, "defeat.txt");
+				Render((width / 2)- 20, (height* 2/3), "1 : Restart");
+				Render((width / 2)+20, (height* 2/3), "2 : Exit");
 				if (GetAsyncKeyState('1') & 0x0001)
 				{
 					result = 1;
@@ -472,7 +482,7 @@ int main()
 			{
 				Flip();
 				Clear();
-				Render(width / 2, height / 2, "V I C T O R Y");
+				AD(20, 2, "victory.txt");
 				if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
 				{
 					result = 1;

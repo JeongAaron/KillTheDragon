@@ -61,9 +61,11 @@ void LoadAndRender(int x, int y, const char* filePath)
 
 int main()
 {
+    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    GetConsoleScreenBufferInfo(handle, &consoleInfo);
     maximizeConsoleWindow();
     // 슬라임 텍스트 파일의 내용을 (10, 5) 좌표에 출력
-    LoadAndRender(100, 5, "slime.txt");
-
+    printf("%d", consoleInfo.srWindow.Right - consoleInfo.srWindow.Left);
     return 0;
 }
