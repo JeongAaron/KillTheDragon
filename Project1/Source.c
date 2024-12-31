@@ -160,18 +160,6 @@ void Stage(int x, int y, int stage)
 	snprintf(buffer, sizeof(buffer), "%d Stage",stage + 1);
 	Render(x, y, buffer);
 }
-void PlayerHP(int x, int y, int php)
-{
-	char buffer[50];
-	snprintf(buffer, sizeof(buffer), "%+d", php);
-	Render(x, y, buffer);
-}
-void MonsterHP(int x, int y, int mhp)
-{
-	char buffer[50];
-	snprintf(buffer, sizeof(buffer), "%+d", mhp);
-	Render(x, y, buffer);
-}
 void Write(int x, int y)
 {
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -293,9 +281,21 @@ void Battle(int * php, int * pap, int * pdp, int * mhp, int * map, int * mdp, in
 		*Md = 0;
 	}
 }
+void SetConsoleFont(int fontSize) 
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_FONT_INFOEX cfi;
+	cfi.cbSize = sizeof(CONSOLE_FONT_INFOEX);
+	GetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
+	wcscpy_s(cfi.FaceName, ARRAYSIZE(cfi.FaceName), L"Consolas");
+	cfi.dwFontSize.X = fontSize;
+	cfi.dwFontSize.Y = fontSize;
+	SetCurrentConsoleFontEx(hConsole, FALSE, &cfi);
+}
 int main()
 {
 	maximizeConsoleWindow();
+	SetConsoleFont(16);
 	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	GetConsoleScreenBufferInfo(handle, &consoleInfo);
@@ -304,7 +304,6 @@ int main()
 	int choice = -1;
 	int bonus = -1;
 	int save = -1;
-	int savefile = -1;
 	int result = -1;
 	int Pr = 0;
 	int Mr = 0;
@@ -329,7 +328,10 @@ int main()
 	char playerhp = php;
 	char key = 0;
 	int select = 0;
+	int select1 = 0;
 	const int option = 3;
+	const int option1 = 2;
+
 	while (save == -1)
 	{
 		Flip();
@@ -355,12 +357,11 @@ int main()
 			case 2: Render(width * 2 / 3 - 7, consoleInfo.srWindow.Bottom, "▶");if (GetAsyncKeyState(VK_SPACE) & 0x0001) exit(0); break;
 		}
 		AD(2, 0, "title.txt");
-		Render(width/2 - 15, consoleInfo.srWindow.Bottom - 2, "선택 : SpaceBar    화실표 이동 : →,↓,←,↑");
+		Render(width/2 - 30, consoleInfo.srWindow.Bottom - 2, "선택 : SpaceBar    화실표 이동 : →,↓,←,↑     게임중 종료 : Esc");
 		Render(width * 1/3, consoleInfo.srWindow.Bottom, "New Game");
 		Render(width/2, consoleInfo.srWindow.Bottom, "Road Game");
 		Render(width * 2/3, consoleInfo.srWindow.Bottom,"Leave");
 	}
-	Clear();
 	while (stage < STAGE)
 	{
 		if (save == 2)
@@ -376,65 +377,77 @@ int main()
 		}
 		while (php > 0 && mhp > 0)
 		{
-			int currentPhp = php;
-			int currentMhp = mhp;
-			Render(width/2 - 10, height/2, "1 : 공격   2 : 방어");
-			AD(5, height/2 - 5, "knight.txt");
-			switch (stage)
-			{
-			case 0: AD(width * 4 / 5, 2, "snale.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "달팽이"); break;
-			case 1: AD(width * 4 / 5, 2, "slime.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "슬라임"); break;
-			case 2: AD(width * 4 / 5, 2, "goblin.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "고블린"); break;
-			case 3: AD(width * 4 / 5, 2, "ogre.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "오우거"); break;
-			case 4: AD(width * 4 / 5, 2, "dragon.txt"); Render((width * 4/5) + 7,(height/2) - 2, "드래곤"); break;
-			}
-			PlayerStatus(5,height/2 -7, php, pap, pdp);
-			MonsterStatus((width * 4/5) + 7,height/2, mhp, map, mdp);
-			Stage(width / 2 - 5, 2, stage);
 			Flip();
 			Clear();
+			int currentPhp = php;
+			int currentMhp = mhp;
 			while (choice == -1)
 			{
-				if (GetAsyncKeyState('1') & 0x0001)
+				Flip();
+				Clear();
+				if (_kbhit())
 				{
-					choice = 0;
+					key = _getch();
+					if (key == -32)
+					{
+						key = _getch();
+					}
+					switch (key)
+					{
+					case UP: select1 = (select1 - 1 + option1) % option1; break;
+					case DOWN: select1 = (select1 + 1) % option1; break;
+					default: break;
+					}
 				}
-				else if (GetAsyncKeyState('2') & 0x0001)
+				switch (select1)
 				{
-					choice = 1;
+				case 0: Render(width / 2 - 15, height / 2 - 1, "▶"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) choice = 0; break;
+				case 1: Render(width / 2 - 15, height / 2 + 1, "▶"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) choice = 1; break;
 				}
-				else if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
+				if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
 				{
-					while (savefile == -1)
+					while (1)
 					{
 						Flip();
 						Clear();
-						Render(width / 2, height / 2, "Game Over");
+						if (_kbhit())
+						{
+							key = _getch();
+							if (key == -32)
+							{
+								key = _getch();
+							}
+							switch (key)
+							{
+							case UP: select1 = (select1 - 1 + option1 ) % option1 ; break;
+							case DOWN: select1 = (select1 + 1) % option1 ; break;
+							default: break;
+							}
+						}
+						switch (select1)
+						{
+						case 0: Render(width / 2 - 5, height / 2 + 2, "▶"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) Save(php, pap, pdp, mhp, map, mdp, stage),exit(0); break;
+						case 1: Render(width / 2 - 5, height / 2 + 4, "▶"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) exit(0); break;
+						}
 						Render(width / 2, (height / 2) + 2, "Save");
 						Render(width / 2, (height / 2) + 4, "Exit");
-						if (GetAsyncKeyState('S') & 0x0001)
-						{
-							Save(php, pap, pdp, mhp, map, mdp, stage);
-							savefile = 0;
-							exit(0);
-						}
-						else if (GetAsyncKeyState('E') & 0x0001)
-						{
-							exit(0);
-							savefile = 1;
-						}
-						savefile = -1;
 					}
 				}
 				Battle(&php, &pap, &pdp, &mhp, &map, &mdp, choice,stage,&Pr,&Mr,&Pd,&Md);
-			}
-			if (php - currentPhp != 0)
-			{
-				PlayerHP(width/4 +5, height/2, php - currentPhp);
-			}
-			if (mhp - currentMhp != 0)
-			{
-				MonsterHP((width * 2 / 3)- 5,height/2, mhp - currentMhp);
+				Render(width / 2 - 10, height / 2 - 1, "공격");
+				Render(width / 2 - 10, height / 2 + 1, "방어");
+				AD(5, height / 2 - 5, "knight.txt");
+				switch (stage)
+				{
+				case 0: AD(width * 4 / 5, 2, "snale.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "달팽이"); break;
+				case 1: AD(width * 4 / 5, 2, "slime.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "슬라임"); break;
+				case 2: AD(width * 4 / 5, 2, "goblin.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "고블린"); break;
+				case 3: AD(width * 4 / 5, 2, "ogre.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "오우거"); break;
+				case 4: AD(width * 4 / 5, 2, "dragon.txt"); Render((width * 4 / 5) + 7, (height / 2) - 2, "드래곤"); break;
+				}
+				PlayerStatus(5, height / 2 - 7, php, pap, pdp);
+				MonsterStatus((width * 4 / 5) + 7, height / 2, mhp, map, mdp);
+				Stage(width / 2 - 5, 2, stage);
 			}
 			choice = -1;
 		}
@@ -444,26 +457,31 @@ int main()
 			{
 				Flip();
 				Clear();
+				if (_kbhit())
+				{
+					key = _getch();
+					if (key == -32)
+					{
+						key = _getch();
+					}
+					switch (key)
+					{
+					case UP: select = (select - 1 + option) % option; break;
+					case DOWN: select = (select + 1) % option; break;
+					default: break;
+					}
+				}
+				switch (select)
+				{
+				case 0: Render(width /2 - 5, height/2 + 2, "▶"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) bonus = 1, php += 50; break;
+				case 1: Render(width /2 - 5, height/2 + 4, "▶"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) bonus = 2, pap += 5; break;
+				case 2: Render(width /2 - 5, height/2 + 6, "▶"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) bonus = 3, pdp += 5; break;
+				}
 				Render(width / 2, consoleInfo.srWindow.Bottom, "Stage Clear");
 				Render(width / 2, height / 2, "보상을 선택하세요");
-				Render(width / 2, (height / 2) + 2, "1 : 체력회복(50)");
-				Render(width / 2, (height / 2) + 4, "2 : 공격력 증가(5)");
-				Render(width / 2, (height / 2) +6, "3 : 방어력력 증가(5)");
-				if (GetAsyncKeyState('1') & 0x0001)
-				{
-					bonus = 1;
-					php += 50;
-				}
-				else if (GetAsyncKeyState('2') & 0x0001)
-				{
-					bonus = 2;
-					pap += 5;
-				}
-				else if (GetAsyncKeyState('3') & 0x0001)
-				{
-					bonus = 3;
-					pdp += 5;
-				}
+				Render(width / 2, (height / 2) + 2, "체력회복(50)");
+				Render(width / 2, (height / 2) + 4, "공격력 증가(5)");
+				Render(width / 2, (height / 2) +6, "방어력력 증가(5)");
 			}
 			Clear();
 			bonus = -1;
