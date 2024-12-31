@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <Windows.h>
+#include <conio.h>
 
 #define PHP 100
 #define PAP 10
@@ -10,6 +11,11 @@
 #define MDP 4
 #define STAGE 5
 #define SIZE 10000
+#define UP 72
+#define LEFT 75
+#define RIGHT 77
+#define DOWN 80
+
 struct Character
 {
 	int PlayerHP;
@@ -321,27 +327,38 @@ int main()
 	int height = consoleInfo.srWindow.Bottom - consoleInfo.srWindow.Top - 1;
 	int width = consoleInfo.srWindow.Right - consoleInfo.srWindow.Left - 1;
 	char playerhp = php;
-	srand(time(NULL));
+	char key = 0;
+	int select = 0;
+	const int option = 3;
 	while (save == -1)
 	{
 		Flip();
 		Clear();
-		if (GetAsyncKeyState('N') & 0x0001)
+		if (_kbhit())
 		{
-			save = 1;
+			key = _getch();
+			if (key == -32)
+			{
+				key = _getch();
+			}
+			switch (key)
+			{
+			case LEFT: select = (select - 1 + option) % option;break;
+			case RIGHT: select = (select + 1) % option;break;
+			default: break;
+			}
 		}
-		else if (GetAsyncKeyState('R') & 0x0001)
+		switch (select)
 		{
-			save = 2;
+			case 0: Render(width * 1 / 3 - 7, consoleInfo.srWindow.Bottom, "▶");if (GetAsyncKeyState(VK_SPACE) & 0x0001) save = 1;break;
+			case 1: Render(width/2 - 7, consoleInfo.srWindow.Bottom, "▶");if (GetAsyncKeyState(VK_SPACE) & 0x0001) save = 2; break;
+			case 2: Render(width * 2 / 3 - 7, consoleInfo.srWindow.Bottom, "▶");if (GetAsyncKeyState(VK_SPACE) & 0x0001) exit(0); break;
 		}
-		else if (GetAsyncKeyState('L') & 0x0001)
-		{
-			exit(0);
-		}
-		AD(20, 2, "title.txt");
-		Render(width * 1/3, consoleInfo.srWindow.Bottom-4, "N : New Game");
-		Render(width/2, consoleInfo.srWindow.Bottom - 4, "R : Road Game");
-		Render(width * 2/3, consoleInfo.srWindow.Bottom - 4,"L : Leave");
+		AD(2, 0, "title.txt");
+		Render(width/2 - 15, consoleInfo.srWindow.Bottom - 2, "선택 : SpaceBar    화실표 이동 : →,↓,←,↑");
+		Render(width * 1/3, consoleInfo.srWindow.Bottom, "New Game");
+		Render(width/2, consoleInfo.srWindow.Bottom, "Road Game");
+		Render(width * 2/3, consoleInfo.srWindow.Bottom,"Leave");
 	}
 	Clear();
 	while (stage < STAGE)
