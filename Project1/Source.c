@@ -371,9 +371,9 @@ int main()
 		}
 		else
 		{
-		mhp = MHP + (stage * 10);
-		map = MAP + (stage * 1);
-		mdp = MDP + (stage * 1);
+		mhp = MHP + (stage * 50);
+		map = MAP + (stage * 5);
+		mdp = MDP + (stage * 5);
 		}
 		while (php > 0 && mhp > 0)
 		{
@@ -493,23 +493,39 @@ int main()
 			{
 				Flip();
 				Clear();
+				if (_kbhit())
+				{
+					key = _getch();
+					if (key == -32)
+					{
+						key = _getch();
+					}
+					switch (key)
+					{
+					case LEFT: select1 = (select1 - 1 + option1) % option1; break;
+					case RIGHT: select1 = (select1 + 1) % option1; break;
+					default: break;
+					}
+				}
+				switch (select1)
+				{
+				case 0: Render((width / 2) - 25, height * 2 / 3, "¢º");
+					if (GetAsyncKeyState(VK_SPACE) & 0x0001)
+					{
+						result = 1;
+						php = PHP;
+						pap = PAP;
+						pdp = PDP;
+						stage = 0;
+					};
+					break;
+				case 1: Render((width / 2) + 15, height * 2 / 3, "¢º"); if(GetAsyncKeyState(VK_SPACE) & 0x0001) exit(0); break;
+				}
 				AD(20, 2, "defeat.txt");
-				Render((width / 2)- 20, (height* 2/3), "1 : Restart");
-				Render((width / 2)+20, (height* 2/3), "2 : Exit");
-				if (GetAsyncKeyState('1') & 0x0001)
-				{
-					result = 1;
-					result = -1;
-					php = PHP;
-					pap = PAP;
-					pdp = PDP;
-					stage = 0;
-				}
-				else if (GetAsyncKeyState(VK_ESCAPE) & 0x0001)
-				{
-					exit(0);
-				}
+				Render((width / 2)- 20, (height* 2/3), "Restart");
+				Render((width / 2)+20, (height* 2/3), "Exit");
 			}
+			result = -1;
 		}
 		else if (stage == STAGE - 1)
 		{
