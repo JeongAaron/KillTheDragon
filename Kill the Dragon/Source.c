@@ -522,7 +522,7 @@ int main()
 					break;
 				case 1: Render((width / 2) + 15, height * 2 / 3, "¢º"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) exit(0); break;
 				}
-				AD(20, 2, "defeat.txt");
+				AD(50, 2, "defeat.txt");
 				Render((width / 2) - 20, (height * 2 / 3), "Restart");
 				Render((width / 2) + 20, (height * 2 / 3), "Exit");
 			}
@@ -562,7 +562,7 @@ int main()
 					break;
 				case 1: Render((width / 2) + 15, height * 2 / 3, "¢º"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) exit(0); break;
 				}
-				AD(20, 2, "victory.txt");
+				AD(50, 2, "victory.txt");
 				Render((width / 2) - 20, (height * 2 / 3), "Restart");
 				Render((width / 2) + 20, (height * 2 / 3), "Exit");
 			}
