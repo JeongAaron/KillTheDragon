@@ -1,1 +1,3 @@
-﻿
+﻿  Source.c
+C:\Users\Administrator\Desktop\CodingGame\Kill the Dragon\Source.c(166,8): warning C4101: 'dword' :참조되지 않은 지역 변수입니다.
+  Kill the Dragon.vcxproj -> C:\Users\Administrator\Desktop\CodingGame\Kill the Dragon\x64\Debug\Kill the Dragon.exe

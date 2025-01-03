@@ -295,7 +295,7 @@ void SetTextSize(int fontSize) // 텍스트의 사이즈를 특정하여 콘솔 창의 비율을 고
 int main()
 {
 	MaxWindowConsol();
-	SetTextSize(16);
+	SetTextSize(12);
 	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
 	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
 	GetConsoleScreenBufferInfo(handle, &consoleInfo);
@@ -356,7 +356,7 @@ int main()
 		case 1: Render(width / 2 - 5, consoleInfo.srWindow.Bottom, "▶"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) save = 2; break;
 		case 2: Render(width * 2 / 3 - 5, consoleInfo.srWindow.Bottom, "▶"); if (GetAsyncKeyState(VK_SPACE) & 0x0001) exit(0); break;
 		}
-		AD(2, 0, "title.txt");
+		AD(50, 0, "title.txt");
 		Render(width / 2 - 30, consoleInfo.srWindow.Bottom - 2, "선택 : SpaceBar    화실표 이동 : →,↓,←,↑     게임중 종료 : Esc");
 		Render(width * 1 / 3, consoleInfo.srWindow.Bottom, "New Game");
 		Render(width / 2, consoleInfo.srWindow.Bottom, "Road Game");
